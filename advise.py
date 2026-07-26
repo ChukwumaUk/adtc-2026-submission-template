@@ -8,7 +8,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 EMBED_MODEL = os.path.join(HERE, "model", "all-MiniLM-L6-v2-ggml-model-f16.gguf")
-GEN_MODEL = os.path.join(HERE, "model", "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf")
+GEN_MODEL = os.path.join(HERE, "model", "Llama-3.2-1B-Instruct-Q4_K_M.gguf")
 STORE_FILE = os.path.join(HERE, "vector_store.json")
 
 TOP_K = 4
