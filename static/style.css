@@ -1,0 +1,426 @@
+/* Cassava Advisor — built to stay readable on a cheap screen in daylight.
+   Pure white paper, near-black ink, one green for structure, one rust that
+   is reserved exclusively for the safety warning. No images, no webfonts. */
+
+:root {
+  --paper:      #ffffff;
+  --ink:        #10140e;
+  --ink-2:      #4c5347;
+  --rule:       #d8dcd3;
+  --rule-soft:  #edf0ea;
+  --leaf:       #14572e;
+  --leaf-wash:  #edf4ef;
+  --alert:      #8b2e0c;
+  --alert-wash: #fdf1ea;
+
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+
+  --gutter: 1.5rem;
+  --measure: 40rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 46rem) {
+  body { font-size: 1.1875rem; }
+  :root { --gutter: 2.5rem; }
+}
+
+button, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--leaf);
+  outline-offset: 2px;
+}
+
+/* --- Shared label style: the utility voice of the page ------------------ */
+
+.eyebrow {
+  margin: 0 0 0.65rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* --- Masthead ---------------------------------------------------------- */
+
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 1.75rem var(--gutter) 1.25rem;
+}
+
+.masthead-inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.provenance {
+  margin: 0.4rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+}
+
+.page {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 2.25rem var(--gutter) 3rem;
+}
+
+/* --- Ask ---------------------------------------------------------------- */
+
+.ask { margin: 0 0 2.25rem; }
+
+#question {
+  display: block;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  resize: vertical;
+  min-height: 6rem;
+}
+
+#question::placeholder { color: var(--ink-2); opacity: 1; }
+
+.ask-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.7rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--leaf); border-color: var(--leaf); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #0e4423; border-color: #0e4423; }
+.btn-primary:disabled { background: var(--rule); border-color: var(--rule); color: var(--ink-2); cursor: not-allowed; }
+
+.btn-stop { background: var(--paper); border-color: var(--ink); color: var(--ink); }
+.btn-stop:hover { background: var(--ink); color: var(--paper); }
+
+.hint {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+
+/* --- Chips: examples and sources --------------------------------------- */
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.55rem 0.9rem;
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  font-size: 1rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.chip-example { cursor: pointer; }
+.chip-example:hover { border-color: var(--leaf); background: var(--leaf-wash); }
+
+.chip-tag {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--leaf);
+  border: 1px solid var(--leaf);
+  border-radius: 2px;
+  padding: 0.05rem 0.3rem;
+}
+
+.examples { margin-bottom: 1rem; }
+
+.chip-source {
+  background: var(--leaf-wash);
+  border-color: #c6dbcd;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.chip-source .doc { font-weight: 600; }
+
+.chip-source .score {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--leaf);
+  border-left: 1px solid #c6dbcd;
+  padding-left: 0.65rem;
+}
+
+/* --- The stage rail: this page's signature ------------------------------
+   A three-notch field form. The spine fills as work really advances, and
+   the active step counts real seconds so a 60 second wait never looks
+   frozen. Markers are squares, not circles — this is a form, not a spinner. */
+
+.run { margin-top: 0.5rem; }
+
+.rail {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  position: relative;
+}
+
+/* The spine runs marker centre to marker centre. Both offsets are measured
+   in JS so the fill stops exactly on the last notch at any label wrap. */
+.rail::before {
+  content: "";
+  position: absolute;
+  left: 0.4375rem;
+  top: var(--spine-top, 0.85rem);
+  height: var(--spine-height, 0);
+  width: 1.5px;
+  background: var(--rule);
+}
+
+.rail::after {
+  content: "";
+  position: absolute;
+  left: 0.4375rem;
+  top: var(--spine-top, 0.85rem);
+  width: 1.5px;
+  height: var(--fill, 0px);
+  background: var(--leaf);
+  transition: height 420ms ease;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  padding: 0.3rem 0;
+  min-height: 2rem;
+}
+
+.step-mark {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  margin-top: 0.35rem;
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: 2px;
+}
+
+.step-label {
+  font-size: 1rem;
+  color: var(--ink-2);
+}
+
+.step-time {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.step[data-state="active"] .step-mark {
+  border-color: var(--leaf);
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 8px var(--leaf);
+  animation: notch 1.4s ease-in-out infinite;
+}
+
+.step[data-state="active"] .step-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.step[data-state="done"] .step-mark {
+  border-color: var(--leaf);
+  background: var(--leaf);
+}
+
+.step[data-state="done"] .step-label { color: var(--ink); }
+
+@keyframes notch {
+  0%, 100% { box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 8px var(--leaf); }
+  50%      { box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 8px var(--leaf); }
+}
+
+.status {
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+
+.status:empty { display: none; }
+
+/* --- Sources ------------------------------------------------------------ */
+
+.sources { margin: 0 0 1.75rem; }
+
+/* --- Answer ------------------------------------------------------------- */
+
+.answer {
+  margin: 0 0 1.5rem;
+  padding-left: 1.1rem;
+  border-left: 3px solid var(--leaf);
+  font-size: 1.1875rem;
+  line-height: 1.75;
+}
+
+@media (min-width: 46rem) {
+  .answer { font-size: 1.25rem; }
+}
+
+#answer-text { white-space: pre-wrap; }
+
+/* [hidden] must beat the display below, or the cursor blinks forever. */
+.cursor[hidden] { display: none; }
+
+.cursor {
+  display: inline-block;
+  width: 0.55rem;
+  height: 1.15rem;
+  margin-left: 0.1rem;
+  vertical-align: -0.15rem;
+  background: var(--leaf);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+/* --- Safety warning: the only place rust is used ------------------------ */
+
+.warning {
+  margin: 0 0 1.5rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--alert-wash);
+  border: 2px solid var(--alert);
+  border-left-width: 8px;
+  border-radius: 3px;
+}
+
+.warning-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--alert);
+}
+
+.warning-body {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* --- Completion marker -------------------------------------------------- */
+
+.completion {
+  margin: 0 0 1.5rem;
+  padding-top: 0.85rem;
+  border-top: 2px solid var(--ink);
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+/* --- Error -------------------------------------------------------------- */
+
+.error {
+  margin: 0 0 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+
+.error-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.error-body { margin: 0; font-size: 1.0625rem; }
+
+/* --- Footer ------------------------------------------------------------- */
+
+.footpost {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter) 2.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.footpost p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .cursor { opacity: 1; }
+}

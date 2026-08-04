@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cassava Advisor</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1 class="wordmark">Cassava Advisor</h1>
+    <p class="provenance" id="provenance">Works offline. Answers come only from vetted field guides.</p>
+  </div>
+</header>
+
+<main class="page">
+
+  <form class="ask" id="ask-form" autocomplete="off">
+    <label class="eyebrow" for="question">Your question</label>
+    <textarea id="question" name="question" rows="3"
+              placeholder="Describe what you are seeing on your farm, in English or Igbo."
+              required></textarea>
+    <div class="ask-actions">
+      <button type="submit" class="btn btn-primary" id="ask-btn">Get advice</button>
+      <button type="button" class="btn btn-stop" id="stop-btn" hidden>Stop</button>
+      <p class="hint" id="hint">An answer takes up to a minute on a laptop.</p>
+    </div>
+  </form>
+
+  <section class="examples" id="examples" aria-labelledby="examples-title">
+    <p class="eyebrow" id="examples-title">Try one of these</p>
+    <ul class="chips">
+      <li><button type="button" class="chip chip-example">My cassava leaves are turning yellow and curling near the top of the plant</button></li>
+      <li><button type="button" class="chip chip-example"><span class="chip-tag">Igbo</span>Akwụkwọ akpụ m na-edo edo ma nwee ntụpọ</button></li>
+      <li><button type="button" class="chip chip-example">Which cassava variety should I plant for the best yield?</button></li>
+      <li><button type="button" class="chip chip-example">How do I prepare land and space stem cuttings at the start of the rainy season?</button></li>
+    </ul>
+  </section>
+
+  <section class="run" id="run" hidden>
+
+    <ol class="rail" id="rail">
+      <li class="step" data-stage="understanding">
+        <span class="step-mark" aria-hidden="true"></span>
+        <span class="step-label">Understanding your question</span>
+        <span class="step-time" aria-hidden="true"></span>
+      </li>
+      <li class="step" data-stage="searching">
+        <span class="step-mark" aria-hidden="true"></span>
+        <span class="step-label">Searching the guides</span>
+        <span class="step-time" aria-hidden="true"></span>
+      </li>
+      <li class="step" data-stage="writing">
+        <span class="step-mark" aria-hidden="true"></span>
+        <span class="step-label">Writing your advice</span>
+        <span class="step-time" aria-hidden="true"></span>
+      </li>
+    </ol>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <section class="sources" id="sources" hidden aria-labelledby="sources-title">
+      <p class="eyebrow" id="sources-title">Guides consulted</p>
+      <ul class="chips" id="source-list"></ul>
+    </section>
+
+    <article class="answer" id="answer" hidden><span id="answer-text"></span><span class="cursor" id="cursor" hidden></span></article>
+
+    <aside class="warning" id="warning" hidden>
+      <p class="warning-title">Safety warning</p>
+      <p class="warning-body" id="warning-body"></p>
+    </aside>
+
+    <p class="completion" id="completion" hidden></p>
+
+    <aside class="error" id="error" hidden>
+      <p class="error-title">Something went wrong</p>
+      <p class="error-body" id="error-body"></p>
+    </aside>
+
+  </section>
+
+</main>
+
+<footer class="footpost">
+  <p>Advice is drawn from FAO, IITA, ASHC and NAERLS cassava guides. It does not replace a local extension officer.</p>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

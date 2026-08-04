@@ -27,6 +27,12 @@ CHEMICAL_WORDS = [
     "dimethoate", "malathion", "neem oil", "vaccine", "antibiotic",
 ]
 
+OFF_TOPIC_MESSAGE = (
+    "I focus on cassava farming, and I could not find reliable "
+    "information in my guides to answer this question. Please consult "
+    "your local agricultural extension officer for advice on this topic."
+)
+
 
 def tokenize(text):
     return re.findall(r"[a-z]+", text.lower())
@@ -73,12 +79,16 @@ def hybrid_retrieve(question, store, vectors, bm25):
     return [(store[i], float(sem_scores[i]), float(fscore)) for i, fscore in final]
 
 
-def generate(question, ranked_chunks):
+# Alias so callers can import the retrieval step under its generic name.
+retrieve = hybrid_retrieve
+
+
+def build_prompt(question, ranked_chunks):
     facts = ""
     for n, (chunk, sem, fused) in enumerate(ranked_chunks, 1):
         facts += f"{n}. {chunk['text']}\n\n"
 
-    prompt = f"""You are an expert farming advisor for Nigerian cassava farmers. Below are facts retrieved from trusted agricultural guides, ordered from most to least relevant.
+    return f"""You are an expert farming advisor for Nigerian cassava farmers. Below are facts retrieved from trusted agricultural guides, ordered from most to least relevant.
 
 STRICT RULES:
 - Use ONLY the information in the FACTS below. Do not add treatments, chemicals, products, or recommendations that are not explicitly stated in the FACTS.
@@ -98,9 +108,13 @@ QUESTION: {question}
 
 YOUR ADVICE:"""
 
+
+def generate(question, ranked_chunks):
+    prompt = build_prompt(question, ranked_chunks)
+
     result = subprocess.run(
         ["llama-cli", "-m", GEN_MODEL, "-p", prompt,
-         "-n", "400", "--no-warmup", "-st",
+         "-n", "600", "--no-warmup", "-st",
          "--temp", "0", "--seed", "42",
          "--no-display-prompt", "--no-show-timings", "--simple-io"],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
@@ -120,40 +134,46 @@ def check_invented_chemicals(answer, ranked_chunks):
     return [w for w in CHEMICAL_WORDS if w in answer_lower]
 
 
-# --- Load everything once ---
-with open(STORE_FILE, encoding="utf-8") as f:
-    store = json.load(f)
-vectors = np.array([item["embedding"] for item in store])
-bm25 = BM25Okapi([tokenize(c["text"]) for c in store])
+def load_store():
+    """Load everything once. Returns (store, vectors, bm25)."""
+    with open(STORE_FILE, encoding="utf-8") as f:
+        store = json.load(f)
+    vectors = np.array([item["embedding"] for item in store])
+    bm25 = BM25Okapi([tokenize(c["text"]) for c in store])
+    return store, vectors, bm25
 
-question = sys.argv[1]
 
-print("Retrieving knowledge...")
-ranked = hybrid_retrieve(question, store, vectors, bm25)
-print("Top facts (hybrid: meaning + keyword):")
-for n, (chunk, sem, fused) in enumerate(ranked, 1):
-    print(f"  {n}. [sem {sem:.3f}] {chunk['source'][:22]:24s} {chunk['text'][:55]}...")
-print()
-print("=" * 70)
-print("ADVISOR'S ANSWER:")
-print("=" * 70)
+def main():
+    store, vectors, bm25 = load_store()
 
-# Gate uses the best SEMANTIC score, which is on a meaningful scale
-best_sem = max(sem for _, sem, _ in ranked)
-if best_sem < RELEVANCE_THRESHOLD:
-    print(
-        "I focus on cassava farming, and I could not find reliable "
-        "information in my guides to answer this question. Please consult "
-        "your local agricultural extension officer for advice on this topic."
-    )
-else:
-    answer = generate(question, ranked)
-    print(answer)
-    invented = check_invented_chemicals(answer, ranked)
-    if invented:
-        print()
-        print("=" * 70)
-        print("SAFETY WARNING: This answer mentions treatments not found in")
-        print(f"the source guides: {', '.join(invented)}")
-        print("Do not act on these without consulting a qualified agricultural")
-        print("extension officer before applying anything to your crop.")
+    question = sys.argv[1]
+
+    print("Retrieving knowledge...")
+    ranked = hybrid_retrieve(question, store, vectors, bm25)
+    print("Top facts (hybrid: meaning + keyword):")
+    for n, (chunk, sem, fused) in enumerate(ranked, 1):
+        print(f"  {n}. [sem {sem:.3f}] {chunk['source'][:22]:24s} {chunk['text'][:55]}...")
+    print()
+    print("=" * 70)
+    print("ADVISOR'S ANSWER:")
+    print("=" * 70)
+
+    # Gate uses the best SEMANTIC score, which is on a meaningful scale
+    best_sem = max(sem for _, sem, _ in ranked)
+    if best_sem < RELEVANCE_THRESHOLD:
+        print(OFF_TOPIC_MESSAGE)
+    else:
+        answer = generate(question, ranked)
+        print(answer)
+        invented = check_invented_chemicals(answer, ranked)
+        if invented:
+            print()
+            print("=" * 70)
+            print("SAFETY WARNING: This answer mentions treatments not found in")
+            print(f"the source guides: {', '.join(invented)}")
+            print("Do not act on these without consulting a qualified agricultural")
+            print("extension officer before applying anything to your crop.")
+
+
+if __name__ == "__main__":
+    main()

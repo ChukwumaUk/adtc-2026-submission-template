@@ -112,6 +112,12 @@ ENGLISH_TERMS = {
     "which one should i plant": ["improved variety", "resistant variety"],
     "what should i plant": ["improved variety", "resistant variety"],
     "resistant variety": ["improved variety", "resistance", "tolerant"],
+    "variety": ["improved variety", "released variety", "yield per hectare"],
+    "varieties": ["improved variety", "released variety", "yield per hectare"],
+    "highest yield": ["highest yielding", "improved variety", "tonnes per hectare"],
+    "highest yielding": ["improved variety", "tonnes per hectare"],
+    "most yield": ["highest yielding", "improved variety", "tonnes per hectare"],
+    "best yielding": ["highest yielding", "improved variety", "tonnes per hectare"],
     "tiny insects": ["mealybug", "mite", "whitefly"],
     "flies": ["whitefly", "whiteflies"],
 }
