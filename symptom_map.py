@@ -103,6 +103,15 @@ ENGLISH_TERMS = {
     "holes in leaves": ["defoliation", "feeding damage"],
 
     "insects": ["pest", "mealybug", "mite", "whitefly"],
+
+    # intent: choosing what to plant
+    "which variety": ["improved variety", "released variety", "resistant variety", "yield per hectare"],
+    "what variety": ["improved variety", "released variety", "resistant variety", "yield per hectare"],
+    "variety should i plant": ["improved variety", "resistant variety", "yield per hectare"],
+    "best variety": ["improved variety", "highest yielding", "resistant variety"],
+    "which one should i plant": ["improved variety", "resistant variety"],
+    "what should i plant": ["improved variety", "resistant variety"],
+    "resistant variety": ["improved variety", "resistance", "tolerant"],
     "tiny insects": ["mealybug", "mite", "whitefly"],
     "flies": ["whitefly", "whiteflies"],
 }
