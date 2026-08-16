@@ -118,6 +118,10 @@ ENGLISH_TERMS = {
     "highest yielding": ["improved variety", "tonnes per hectare"],
     "most yield": ["highest yielding", "improved variety", "tonnes per hectare"],
     "best yielding": ["highest yielding", "improved variety", "tonnes per hectare"],
+    "starch content": ["dry matter content", "improved variety", "high dry matter"],
+    "increase starch": ["dry matter content", "improved variety", "high dry matter"],
+    "more starch": ["dry matter content", "improved variety", "high dry matter"],
+    "dry matter": ["improved variety", "starch content"],
     "tiny insects": ["mealybug", "mite", "whitefly"],
     "flies": ["whitefly", "whiteflies"],
 }

@@ -83,10 +83,40 @@ def hybrid_retrieve(question, store, vectors, bm25):
 retrieve = hybrid_retrieve
 
 
+SYMPTOM_SIGNALS = [
+    "turning", "yellow", "yellowing", "dying", "died", "wilting", "curling",
+    "curled", "spots", "spotted", "rotting", "rot", "holes", "drying",
+    "distorted", "stunted", "bunchy", "clumping", "chlorotic", "necrosis",
+    "what is wrong", "what's wrong", "problem with", "attacking", "damaged",
+    "damage", "infested", "sick", "not growing", "falling off",
+]
+
+
+def classify_question(expanded_question):
+    """Decide in code whether this is a diagnostic or advisory question.
+    The model cannot classify reliably, so we do it here and send only the
+    relevant instruction. Runs on the EXPANDED query so Igbo symptom terms,
+    which expand into English, classify correctly too."""
+    q = expanded_question.lower()
+    return "diagnostic" if any(sig in q for sig in SYMPTOM_SIGNALS) else "advisory"
+
+
 def build_prompt(question, ranked_chunks):
     facts = ""
     for n, (chunk, sem, fused) in enumerate(ranked_chunks, 1):
         facts += f"{n}. {chunk['text']}\n\n"
+
+    # Classify in code, not in the prompt. A 1B model cannot reliably pick
+    # between branching instructions, so we send only the relevant one.
+    # Classify on the EXPANDED query so Igbo symptom terms classify correctly.
+    kind = classify_question(expand_query(question))
+    if kind == "diagnostic":
+        how_to = ("- Name the single most likely cause of the problem first, taken from the FACTS, "
+                  "and say briefly why. Then mention one other possible cause if the FACTS support one.")
+    else:
+        how_to = ("- The farmer is asking for guidance, not reporting a problem. Do NOT diagnose a cause "
+                  "and do not begin with 'the most likely cause'. Give clear, practical steps or options "
+                  "drawn from the FACTS.")
 
     return f"""You are an expert farming advisor for Nigerian cassava farmers. Below are facts retrieved from trusted agricultural guides, ordered from most to least relevant.
 
@@ -95,10 +125,10 @@ STRICT RULES:
 - If the FACTS do not mention how to treat or solve the problem, say honestly that the guides do not specify a treatment, and advise the farmer to consult a local agricultural extension officer. Do NOT invent a solution.
 - Do not give scientific or Latin names unless they appear in the FACTS.
 - Do not recommend any chemical product or commercial treatment unless that exact product name is written in the FACTS.
+- Never repeat the same recommendation more than once.
 
 HOW TO ANSWER:
-- If the question describes a problem, name the most likely cause first (from the FACTS), then briefly mention any alternative cause.
-- If the question asks how to do something, give clear step-by-step guidance from the FACTS.
+{how_to}
 - Give the farmer every relevant option the FACTS support, not just one.
 - Be clear, practical, and brief.
 
