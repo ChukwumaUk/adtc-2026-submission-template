@@ -1,38 +1,55 @@
 #!/usr/bin/env bash
-# Download your model weight file.
+# Download the model weights for the Offline Cassava Advisor.
+#
+# Two models are required:
+#   1. Llama-3.2-1B-Instruct-Q4_K_M.gguf  — the generator (declared in metadata.json)
+#   2. all-MiniLM-L6-v2-ggml-model-f16.gguf — the embedder used for offline retrieval
 #
 # Rules:
-#   - Must be idempotent (safe to run multiple times).
-#   - Must download without any credentials (public URL only).
-#   - The output path must match `_runtime.model_path` in metadata.json.
+#   - Idempotent (safe to run multiple times).
+#   - No credentials required (public URLs only).
+#   - Output paths match `_runtime.model_path` in metadata.json.
 
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODEL_DIR="$HERE/model"
-MODEL_FILE="$MODEL_DIR/SmolLM2-135M-Instruct-Q4_K_M.gguf"
-
-# ── Replace this URL with your public model weight URL ─────────────────────────
-MODEL_URL="https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q4_K_M.gguf"
-# ───────────────────────────────────────────────────────────────────────────────
-
 mkdir -p "$MODEL_DIR"
 
-if [[ -f "$MODEL_FILE" ]]; then
-  echo "model already present at $MODEL_FILE — skipping download"
-  exit 0
-fi
+fetch() {
+  local url="$1"
+  local dest="$2"
+  local label="$3"
 
-echo "downloading $MODEL_URL → $MODEL_FILE (~80 MB)…"
+  if [[ -f "$dest" ]]; then
+    echo "$label already present at $dest — skipping"
+    return 0
+  fi
 
-if command -v curl > /dev/null 2>&1; then
-  curl -L --fail --progress-bar -o "$MODEL_FILE.partial" "$MODEL_URL"
-elif command -v wget > /dev/null 2>&1; then
-  wget --show-progress -O "$MODEL_FILE.partial" "$MODEL_URL"
-else
-  echo "error: neither curl nor wget found" >&2
-  exit 1
-fi
+  echo "downloading $label → $dest"
+  if command -v curl > /dev/null 2>&1; then
+    curl -L --fail --progress-bar -o "$dest.partial" "$url"
+  elif command -v wget > /dev/null 2>&1; then
+    wget --show-progress -O "$dest.partial" "$url"
+  else
+    echo "error: neither curl nor wget found" >&2
+    exit 1
+  fi
+  mv "$dest.partial" "$dest"
+  echo "done: $dest"
+}
 
-mv "$MODEL_FILE.partial" "$MODEL_FILE"
-echo "done: $MODEL_FILE"
+# 1. Generator model (~770 MB)
+fetch \
+  "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf" \
+  "$MODEL_DIR/Llama-3.2-1B-Instruct-Q4_K_M.gguf" \
+  "Llama-3.2-1B-Instruct-Q4_K_M (generator)"
+
+# 2. Embedding model (~44 MB)
+fetch \
+  "https://huggingface.co/second-state/All-MiniLM-L6-v2-Embedding-GGUF/resolve/main/all-MiniLM-L6-v2-ggml-model-f16.gguf" \
+  "$MODEL_DIR/all-MiniLM-L6-v2-ggml-model-f16.gguf" \
+  "all-MiniLM-L6-v2-f16 (embedder)"
+
+echo
+echo "All models ready in $MODEL_DIR"
