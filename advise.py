@@ -101,6 +101,22 @@ def classify_question(expanded_question):
     return "diagnostic" if any(sig in q for sig in SYMPTOM_SIGNALS) else "advisory"
 
 
+TREATMENT_SIGNALS = [
+    "control", "manage", "treat", "apply", "spray", "remove", "uproot",
+    "destroy", "rotate", "fallow", "resistant variety", "resistant varieties",
+    "clean planting", "healthy cuttings", "biological control", "natural enemy",
+    "predator", "hand weed", "weeding", "prevent", "avoid planting",
+]
+
+
+def facts_contain_treatment(ranked_chunks):
+    """True if any retrieved passage actually says what to DO, not just what
+    the problem looks like. Symptom-only passages invite the model to invent
+    treatments, so we detect that case and instruct it explicitly."""
+    joined = " ".join(c["text"].lower() for c, _, _ in ranked_chunks)
+    return any(sig in joined for sig in TREATMENT_SIGNALS)
+
+
 def build_prompt(question, ranked_chunks):
     facts = ""
     for n, (chunk, sem, fused) in enumerate(ranked_chunks, 1):
@@ -113,6 +129,7 @@ def build_prompt(question, ranked_chunks):
     if kind == "diagnostic":
         how_to = ("- Name the single most likely cause of the problem first, taken from the FACTS, "
                   "and say briefly why. Then mention one other possible cause if the FACTS support one.")
+
     else:
         how_to = ("- The farmer is asking for guidance, not reporting a problem. Do NOT diagnose a cause "
                   "and do not begin with 'the most likely cause'. Give clear, practical steps or options "
@@ -156,6 +173,47 @@ def generate(question, ranked_chunks):
     return raw.replace("Exiting...", "").strip()
 
 
+def strip_invented_treatments(answer, ranked_chunks):
+    """Remove any line recommending a chemical that does not appear in the
+    retrieved facts, and leave a visible marker in its place.
+
+    A word list cannot predict when the model will invent a treatment, but it
+    can identify one after the fact. This acts on what was actually produced
+    rather than trying to forecast it. Returns (cleaned_answer, removed_terms).
+    """
+    facts_text = " ".join(c["text"].lower() for c, _, _ in ranked_chunks)
+    removed = []
+    kept_lines = []
+    marker_added = False
+
+    for line in answer.split("\n"):
+        low = line.lower()
+        hits = [w for w in CHEMICAL_WORDS if w in low and w not in facts_text]
+        if hits:
+            removed.extend(hits)
+            if not marker_added:
+                kept_lines.append(
+                    "[A treatment recommendation was removed here because it "
+                    "does not appear in the source guides.]"
+                )
+                marker_added = True
+            continue
+        kept_lines.append(line)
+
+    cleaned = "\n".join(kept_lines).strip()
+
+    if removed:
+        cleaned += (
+            "\n\nThe guides consulted describe this problem but do not specify a "
+            "treatment for it. Please see your local agricultural extension officer "
+            "before applying anything to your crop."
+        )
+
+    seen = set()
+    unique = [r for r in removed if not (r in seen or seen.add(r))]
+    return cleaned, unique
+
+
 def check_invented_chemicals(answer, ranked_chunks):
     """Flag ANY chemical or product mention. For smallholder farmers, a
     chemical recommendation always warrants caution, whether or not the
@@ -194,15 +252,14 @@ def main():
         print(OFF_TOPIC_MESSAGE)
     else:
         answer = generate(question, ranked)
+        answer, removed = strip_invented_treatments(answer, ranked)
         print(answer)
-        invented = check_invented_chemicals(answer, ranked)
-        if invented:
+        if removed:
             print()
             print("=" * 70)
-            print("SAFETY WARNING: This answer mentions treatments not found in")
-            print(f"the source guides: {', '.join(invented)}")
-            print("Do not act on these without consulting a qualified agricultural")
-            print("extension officer before applying anything to your crop.")
+            print("SAFETY NOTICE: One or more treatment recommendations were removed")
+            print(f"because they are not in the source guides: {', '.join(removed)}")
+            print("This system only passes on advice that appears in its sources.")
 
 
 if __name__ == "__main__":
