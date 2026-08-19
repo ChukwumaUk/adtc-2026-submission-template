@@ -123,6 +123,10 @@ ENGLISH_TERMS = {
     "more starch": ["dry matter content", "improved variety", "high dry matter"],
     "dry matter": ["improved variety", "starch content"],
     "tiny insects": ["mealybug", "mite", "whitefly"],
+    "mealybug": ["cassava mealybug", "chloropyrifos", "seed treatment",
+                 "stem cutting dip", "parasitic wasp", "biological control"],
+    "mealy bug": ["cassava mealybug", "chloropyrifos", "seed treatment",
+                  "stem cutting dip", "parasitic wasp", "biological control"],
     "flies": ["whitefly", "whiteflies"],
 }
 
