@@ -1,190 +1,133 @@
-# ADTC 2026 — Submission Template
+# Offline Cassava Advisor
 
-This is the official template repository for the **Africa Deep Tech Challenge 2026** Laptop LLM track.
+An offline agricultural advisory for Nigerian cassava farmers and extension
+workers. Runs entirely on an 8 GB laptop with no internet connection, no API
+keys, and no cost per question.
 
-Fork this repository, fill in the required files, and submit your repository URL via [adtc-2026.devpost.com](https://adtc-2026.devpost.com).
+The model answers questions about cassava pests, diseases, planting, weed
+management, yield and variety selection. Every answer is grounded in passages
+retrieved from vetted guides published by IITA, FAO, NAERLS and the Africa Soil
+Health Consortium.
 
----
-
-## ✅ Submission Checklist
-
-Before submitting, confirm every item:
-
-- [ ] Your repository is **public** on GitHub
-- [ ] `metadata.json` is fully filled in — no placeholder values remain
-- [ ] `metadata.json` contains exactly **2 test prompts** in the `test_prompts` array, written for your chosen domain
-- [ ] `download_model.sh` successfully downloads your model to `model/`
-- [ ] The downloaded file is a valid **GGUF format** (`.gguf`) weight file
-- [ ] `model/*.gguf` is listed in `.gitignore` — do **not** commit large weight files
-- [ ] `REPORT.md` is filled in with your technical writeup
-- [ ] Running `bash download_model.sh` completes without errors
-- [ ] Your model runs entirely **offline** — zero external network calls during inference
+**ADTC 2026 submission** · Domain: Agriculture · Team ID: `offline-cassava-advisor`
 
 ---
 
-## 📁 Required File Structure
+## How this system works
 
-```
-your-submission/
-├── metadata.json          ← Required. Team, model, and test prompt metadata.
-├── download_model.sh      ← Required. Downloads your .gguf model weight file.
-├── REPORT.md              ← Required. Technical writeup (problem, design, benchmarks).
-├── model/
-│   └── your-model.gguf   ← Downloaded by the script above. Do NOT commit.
-└── .gitignore             ← Must exclude *.gguf and model/ from version control.
-```
+The GGUF model on its own is Llama-3.2-1B-Instruct and has no cassava knowledge.
+What makes it an advisor is the retrieval layer around it:
 
----
+1. The farmer's question is expanded through a vocabulary map that translates
+   everyday and Igbo farming terms into the technical language the guides use
+   (for example "curling near the top" becomes "bunchy top, clumping, shoot tip").
+2. The expanded question is embedded offline using llama.cpp and matched against
+   677 passages from the source guides.
+3. If nothing scores above the relevance threshold, the system declines to answer
+   rather than guessing.
+4. The top passages are passed to the model, which answers using only those facts.
+5. Any chemical or treatment mentioned in the answer is flagged for the farmer to
+   verify with an extension officer.
 
-## 📝 metadata.json
-
-Fill in every field. No field should remain at its placeholder value.
-
-```json
-{
-  "team_id": "your-team-id",
-  "domain": "coding_assistants",
-  "language_scope": ["en"],
-  "african_alpha_claim": false,
-  "budget_laptop_claim": true,
-  "submitter": {
-    "name": "your-name",
-    "email": "your-email@domain.com",
-    "github_handle": "your-github"
-  },
-  "cross_disciplinary_pairing": {
-    "discipline": "education",
-    "load_bearing": true,
-    "description": "Brief description of how your model serves a real-world domain."
-  },
-  "test_prompts": [
-    {
-      "prompt_id": "tp_001",
-      "prompt": "Your first test prompt, written for your chosen domain."
-    },
-    {
-      "prompt_id": "tp_002",
-      "prompt": "Your second test prompt, written for your chosen domain."
-    }
-  ],
-  "model": {
-    "name": "YourModel-Q4_K_M",
-    "runtime": "llama.cpp",
-    "quantization": "GGUF Q4_K_M",
-    "parameters_estimate": "1.1B",
-    "packaging": "binary_bundle"
-  },
-  "_runtime": {
-    "model_path": "model/your-model.gguf"
-  }
-}
-```
-
-### Field Reference
-
-| Field | Required | Description |
-|---|---|---|
-| `team_id` | ✅ | Your unique team ID as registered on the ADTF portal |
-| `domain` | ✅ | Your challenge track. One of: `math_scientific_reasoning`, `healthcare_medical`, `agriculture`, `creative_writing`, `coding_assistants`, `corporate_enterprise`, `autonomous_ai_agents` |
-| `language_scope` | ✅ | Array of BCP-47 language codes. Must include at least one. |
-| `african_alpha_claim` | ✅ | `true` only if claiming the African Use Case Bonus |
-| `budget_laptop_claim` | ✅ | Must be `true` — all submissions target the 8 GB RAM laptop profile |
-| `submitter.name` | ✅ | Full name of the team member submitting the run |
-| `submitter.email` | ✅ | Valid email address linked to the registered team |
-| `submitter.github_handle` | ✅ | Verifiable GitHub username |
-| `cross_disciplinary_pairing.discipline` | ✅ | The deep-tech discipline your model serves |
-| `cross_disciplinary_pairing.load_bearing` | ✅ | `true` if the pairing is integral to the submission, not cosmetic |
-| `test_prompts` | ✅ | **Exactly 2 prompts** in your chosen domain. Organizers will add 2 hidden prompts to test for overfitting. |
-| `model.runtime` | ✅ | Must be `llama.cpp`. No other runtime is accepted. |
-| `model.quantization` | ✅ | Must be a GGUF quantization format (e.g. `GGUF Q4_K_M`, `GGUF Q5_K_M`) |
-| `model.parameters_estimate` | ✅ | Approximate parameter count (e.g. `135M`, `1.1B`, `7B`) |
-| `model.packaging` | ✅ | How the model is packaged. One of: `docker_image`, `docker_build_from_repo`, `binary_bundle` |
-| `_runtime.model_path` | ✅ | Relative path from repo root to your `.gguf` file (e.g. `model/my-model.gguf`) |
+The cross-disciplinary integration is this offline RAG pipeline over agricultural
+records. It is load-bearing: without it the model gives generic answers.
 
 ---
 
-## 📥 download_model.sh
+## Quick start
 
-This script **must** download your model weight file to the `model/` directory.
-
-Rules:
-- Must be idempotent — safe to run multiple times without re-downloading.
-- Must work without any credentials — your weights must be publicly accessible.
-- The downloaded file path must exactly match `_runtime.model_path` in `metadata.json`.
-
-Recommended hosting options for your weights:
-- [Hugging Face](https://huggingface.co) — public model repos (free, best for GGUF files)
-- GitHub Release Assets — attach the `.gguf` file to a GitHub Release
-- Any stable public URL (GCS public bucket, S3 public object, etc.)
-
----
-
-## 📄 REPORT.md
-
-Your technical writeup. Judges and the LLM-based audit system will read this to understand your submission. Cover:
-
-1. **Problem** — What problem are you solving? Who is the target user in an African context?
-2. **Design Decisions** — What model did you start from? Why that quantization level? What alternatives did you evaluate?
-3. **Constraints** — What hardware, connectivity, or data constraints shaped your approach?
-4. **Benchmarks** — What inference speed and memory numbers did you observe on your development machine?
-
-Keep it factual and specific. One to three pages is ideal.
-
----
-
-## 🧪 Local Testing
-
-The ADTC profiler is open source. Install it directly from the official repository:
+### 1. Install
 
 ```bash
-pip install "git+https://github.com/Africa-Deep-Tech-Foundation/adtc-profiler.git"
+git clone https://github.com/ChukwumaUk/adtc-2026-submission-template.git
+cd adtc-2026-submission-template
+./download_model.sh          # fetches both model files (~815 MB total)
+pip install numpy rank_bm25
 ```
 
-Then run a local smoke test before submitting:
+You also need llama.cpp on your PATH:
 
 ```bash
-# 1. Download your weights
-bash download_model.sh
-
-# 2. Run the profiler in participant mode
-adtc-profiler run \
-  --submission . \
-  --mode participant \
-  --output submission.json \
-  --skip-accuracy
-
-# 3. Review your report
-cat submission.json
+brew install llama.cpp       # macOS
+# or build from https://github.com/ggerganov/llama.cpp
 ```
 
-A valid run produces a `submission.json` with `"measured_on": "participant_laptop"`.
+Internet is needed for this step only. Everything after this runs offline.
 
-The profiler source code, including the thermal monitoring logic and scoring formulas, is publicly readable at:
-[github.com/Africa-Deep-Tech-Foundation/adtc-profiler](https://github.com/Africa-Deep-Tech-Foundation/adtc-profiler)
+### 2. Ask a question from the terminal
+
+```bash
+python advise.py "My cassava leaves are turning yellow and curling near the top of the plant. What could be causing this and what should I do?"
+```
+
+This prints the retrieved sources with their relevance scores, then the grounded
+answer, then any safety warning. This is the simplest way to evaluate the system.
+
+### 3. Or use the web interface
+
+Two terminals are needed.
+
+```bash
+# Terminal 1: the model server
+llama-server -m model/Llama-3.2-1B-Instruct-Q4_K_M.gguf --port 8080 -c 4096
+
+# Terminal 2: the web app
+pip install fastapi uvicorn httpx
+python -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+Open http://localhost:8000. The interface streams the answer as it is generated,
+shows which guides were consulted, and displays safety warnings prominently.
 
 ---
 
-## ⚠️ Rules
+## Example questions
 
-1. **Public repository required.** Your repository must be public at the time of evaluation.
-2. **No model weights in git.** Add `*.gguf` and `model/` to your `.gitignore`. The evaluator downloads weights fresh via `download_model.sh`.
-3. **100% offline during evaluation.** Your model must run with zero external network dependencies during our testing window. `download_model.sh` runs before the profiler starts, but once profiling begins, no outbound requests are permitted.
-4. **llama.cpp only.** All models must use GGUF weights and run through `llama.cpp`. No other runtime is supported by our evaluation framework.
-5. **8 GB RAM limit.** Your model must run within the standard laptop profile (4 vCPU, 8 GB RAM, integrated GPU only). Out-of-memory errors during evaluation result in automatic disqualification.
-6. **No size restriction.** There is no parameter count or file size cap — but the 8 GB RAM constraint is strict. Plan your quantization level accordingly.
-7. **Two test prompts required.** Your `metadata.json` must include exactly 2 prompts in the `test_prompts` array. Organizers will generate 2 additional hidden prompts within your domain. All 4 are used for scoring.
+```bash
+python advise.py "Weeds are taking over my cassava farm. How can I control them?"
+python advise.py "Which cassava variety gives the highest yield?"
+python advise.py "How can I increase the starch content of my cassava?"
+python advise.py "akwukwo akpu m na-acha edo edo ma na-ekpoko onu"
+python advise.py "How often should I vaccinate my goats?"
+```
 
----
-
-## 🆘 Support
-
-Open an issue in this repository or contact the ADTF team at challenge@africadeeptech.org.
-
-View the full eligibility rules at [adtc-2026.devpost.com/rules](https://adtc-2026.devpost.com/rules).
+The Igbo question is a farmer describing yellowing, bunching cassava leaves.
+The goat question is out of scope and is declined rather than answered.
 
 ---
 
-## 📄 License
+## What is in this repository
 
-This template is licensed under the terms of the [GNU GPL v3 License](LICENSE).
+| Path | Purpose |
+|---|---|
+| `advise.py` | The advisor. Retrieval, grounding, safety checks, and the CLI. |
+| `app.py` | FastAPI server for the web interface. |
+| `symptom_map.py` | Farmer vocabulary to technical vocabulary bridge, English and Igbo. |
+| `vector_store.json` | 677 pre-computed passage embeddings. |
+| `corpus/` | Cleaned source text, so the vector store is reproducible. |
+| `pipeline/` | Scripts that built the corpus and the vector store. |
+| `static/` | Web interface. No external assets. |
+| `download_model.sh` | Fetches both model files. |
+| `REPORT.md` | Technical report. |
 
+---
+
+## Rebuilding the vector store
+
+Not required to run the system, but the pipeline is included for verification:
+
+```bash
+python pipeline/chunk_corpus.py
+python pipeline/build_store.py
+```
+
+---
+
+## Sources
+
+- IITA, Pest Control in Cassava Farms (IPM Field Guide)
+- IITA, Disease Control in Cassava Farms (IPM Field Guide)
+- IITA BASICS-II, Profiles of Best Performing Improved Cassava Varieties
+- NAERLS, Cassava Production, Processing and Utilization
+- Africa Soil Health Consortium, Cassava System Cropping Guide
+- FAO, Save and Grow: Cassava
