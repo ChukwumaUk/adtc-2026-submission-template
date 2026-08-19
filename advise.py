@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import sys
 import subprocess
@@ -171,6 +172,52 @@ def generate(question, ranked_chunks):
     if "YOUR ADVICE:" in raw:
         raw = raw.rsplit("YOUR ADVICE:", 1)[1]
     return raw.replace("Exiting...", "").strip()
+
+
+SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+")
+
+
+def find_invented_spans(answer, ranked_chunks):
+    """Return (spans, terms) locating invented treatments inside `answer`.
+
+    Spans are (start, end) character offsets into the exact string passed in,
+    so the caller can mark up that same string. Offsets rather than sentence
+    text: the web path used to send the offending sentences and have the
+    browser re-split the streamed answer and match them by string equality,
+    which silently found nothing whenever the two splits disagreed - notably
+    when the answer stopped without terminal punctuation, since only one side
+    had been stripped. A failed match left the invented treatment on screen.
+    Offsets remove the second derivation, so there is nothing left to disagree.
+
+    The CLI keeps using strip_invented_treatments; this is the web path only.
+    """
+    facts_text = " ".join(c["text"].lower() for c, _, _ in ranked_chunks)
+
+    bounds = []
+    start = 0
+    for match in SENTENCE_BREAK.finditer(answer):
+        bounds.append((start, match.start()))
+        start = match.end()
+    bounds.append((start, len(answer)))
+
+    spans, terms = [], []
+    for begin, end in bounds:
+        low = answer[begin:end].lower()
+        hits = [w for w in CHEMICAL_WORDS if w in low and w not in facts_text]
+        if not hits:
+            continue
+        # Tighten onto the visible text so the strike-through does not trail
+        # across the blank line that follows a sentence.
+        while end > begin and answer[end - 1].isspace():
+            end -= 1
+        while begin < end and answer[begin].isspace():
+            begin += 1
+        if begin < end:
+            spans.append((begin, end))
+            terms.extend(hits)
+
+    seen = set()
+    return spans, [t for t in terms if not (t in seen or seen.add(t))]
 
 
 def strip_invented_treatments(answer, ranked_chunks):

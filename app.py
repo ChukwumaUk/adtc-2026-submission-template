@@ -219,15 +219,26 @@ async def answer_stream(request, question):
     answer = "".join(pieces).strip()
 
     # --- Chemical safety check, identical to the CLI ---------------------
-    invented = advise.check_invented_chemicals(answer, ranked)
+    spans, invented = advise.find_invented_spans(answer, ranked)
     if invented:
-        yield sse("warning", {
+        yield sse("redaction", {
+            # The answer is sent back with the offsets that index into it. The
+            # browser marks up this copy rather than the one it assembled from
+            # tokens, so a redaction can never miss because the two strings
+            # drifted apart.
+            "answer": answer,
+            "spans": [[start, end] for start, end in spans],
             "terms": invented,
+            "replacement": (
+                "[A treatment recommendation was removed here because it "
+                "does not appear in the source guides.]"
+            ),
             "message": (
-                "This answer mentions treatments not found in the source "
-                "guides: " + ", ".join(invented) + ". Do not act on these "
-                "without consulting a qualified agricultural extension "
-                "officer before applying anything to your crop."
+                "One or more treatment recommendations were removed because "
+                "they are not in the source guides: " + ", ".join(invented) +
+                ". This system only passes on advice that appears in its "
+                "sources. Please see your local agricultural extension officer "
+                "before applying anything to your crop."
             ),
         })
 

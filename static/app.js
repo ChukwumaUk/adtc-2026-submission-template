@@ -198,6 +198,13 @@
       warningEl.hidden = false;
       return;
     }
+    if (evt.name === "redaction") {
+      sawWarning = true;
+      renderRedaction(d);
+      warningBodyEl.textContent = d.message || "";
+      warningEl.hidden = false;
+      return;
+    }
 
     if (evt.name === "done") {
       completeSteps();
@@ -226,6 +233,69 @@
       errorEl.hidden = false;
       return;
     }
+  }
+
+  var FALLBACK_NOTE =
+    "[A treatment recommendation was removed here because it does not " +
+    "appear in the source guides.]";
+
+  // Redraw the finished answer with the invented treatments struck through.
+  //
+  // The server sends the answer it checked plus character offsets into that
+  // exact string, so nothing is re-derived here and there is no string
+  // matching left to fail. If the offsets do not describe the text we were
+  // given, we drop the whole answer rather than show an unverified treatment:
+  // this is a safety control, so it has to fail closed.
+  function renderRedaction(d) {
+    var note = d.replacement || FALLBACK_NOTE;
+    var full = typeof d.answer === "string" ? d.answer : null;
+    var spans = Array.isArray(d.spans) ? d.spans : null;
+
+    if (full === null || spans === null || spans.length === 0) {
+      answerTextEl.textContent = note;
+      return;
+    }
+
+    var frag = document.createDocumentFragment();
+    var cursor = 0;
+
+    for (var i = 0; i < spans.length; i++) {
+      var pair = spans[i];
+      var start = pair && pair[0];
+      var end = pair && pair[1];
+      var usable =
+        typeof start === "number" && typeof end === "number" &&
+        start >= cursor && end > start && end <= full.length;
+      if (!usable) {
+        answerTextEl.textContent = note;
+        return;
+      }
+
+      if (start > cursor) {
+        frag.appendChild(document.createTextNode(full.slice(cursor, start)));
+      }
+
+      // textContent, never innerHTML: the answer is model output and is
+      // inserted as text, so there is no markup to escape.
+      var struck = document.createElement("span");
+      struck.className = "redacted";
+      struck.textContent = full.slice(start, end);
+      frag.appendChild(struck);
+
+      var replacement = document.createElement("span");
+      replacement.className = "redaction-note";
+      replacement.textContent = note;
+      frag.appendChild(replacement);
+
+      cursor = end;
+    }
+
+    if (cursor < full.length) {
+      frag.appendChild(document.createTextNode(full.slice(cursor)));
+    }
+
+    answerTextEl.textContent = "";
+    answerTextEl.appendChild(frag);
   }
 
   function renderSources(list) {
