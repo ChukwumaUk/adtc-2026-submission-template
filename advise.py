@@ -90,6 +90,13 @@ SYMPTOM_SIGNALS = [
     "distorted", "stunted", "bunchy", "clumping", "chlorotic", "necrosis",
     "what is wrong", "what's wrong", "problem with", "attacking", "damaged",
     "damage", "infested", "sick", "not growing", "falling off",
+    # Treatment requests: the farmer already knows the diagnosis and is asking
+    # what to do. These get the structured diagnostic format, which constrains
+    # the model better than the open advisory format.
+    "what treatment", "treatment should i", "recommend a treatment",
+    "how do i treat", "how can i treat", "how to treat", "eradicate",
+    "what chemical", "which chemical", "what should i spray",
+    "my cassava has", "has cassava mosaic", "has bacterial blight",
 ]
 
 
@@ -128,8 +135,15 @@ def build_prompt(question, ranked_chunks):
     # Classify on the EXPANDED query so Igbo symptom terms classify correctly.
     kind = classify_question(expand_query(question))
     if kind == "diagnostic":
-        how_to = ("- Name the single most likely cause of the problem first, taken from the FACTS, "
-                  "and say briefly why. Then mention one other possible cause if the FACTS support one.")
+        how_to = (
+            "- Answer using exactly these four headings, each on its own line, in this order:\n"
+            "  Most likely problem: name the single most likely cause from the FACTS.\n"
+            "  Why: one sentence on which symptoms point to it.\n"
+            "  What to check: one or two things the farmer should look at to confirm it.\n"
+            "  What to do: the control measures given in the FACTS. If the FACTS give none, "
+            "write that the guides do not specify a treatment.\n"
+            "- Keep each heading to one or two short sentences. Do not add headings of your own."
+        )
 
     else:
         how_to = ("- The farmer is asking for guidance, not reporting a problem. Do NOT diagnose a cause "
