@@ -78,7 +78,10 @@ async def apply_chat_template(client, prompt):
     try:
         response = await client.post(
             f"{LLAMA_SERVER}/apply-template",
-            json={"messages": [{"role": "user", "content": prompt}]},
+            json={"messages": [
+                {"role": "system", "content": "You are an expert farming advisor for Nigerian cassava farmers. Answer only from the facts given in the question."},
+                {"role": "user", "content": prompt},
+            ]},
             timeout=10.0,
         )
         response.raise_for_status()
