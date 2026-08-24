@@ -41,9 +41,9 @@ fetch() {
 
 # 1. Generator model (~770 MB)
 fetch \
-  "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf" \
-  "$MODEL_DIR/Llama-3.2-1B-Instruct-Q4_K_M.gguf" \
-  "Llama-3.2-1B-Instruct-Q4_K_M (generator)"
+  "https://huggingface.co/ChukwumaUk/cassava-advisor-1B-Q4_K_M/resolve/main/cassava-advisor-1B-Q4_K_M.gguf" \
+  "$MODEL_DIR/cassava-advisor-1B-Q4_K_M.gguf" \
+  "Cassava Advisor 1B Q4_K_M (generator)"
 
 # 2. Embedding model (~44 MB)
 fetch \

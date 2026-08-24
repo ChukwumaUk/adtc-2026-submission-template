@@ -11,7 +11,7 @@ from symptom_map import expand_query
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 EMBED_MODEL = os.path.join(HERE, "model", "all-MiniLM-L6-v2-ggml-model-f16.gguf")
-GEN_MODEL = os.path.join(HERE, "model", "Llama-3.2-1B-Instruct-Q4_K_M.gguf")
+GEN_MODEL = os.path.join(HERE, "model", "cassava-advisor-1B-Q4_K_M.gguf")
 STORE_FILE = os.path.join(HERE, "vector_store.json")
 
 TOP_K = 4
@@ -175,7 +175,9 @@ def generate(question, ranked_chunks):
     prompt = build_prompt(question, ranked_chunks)
 
     result = subprocess.run(
-        ["llama-cli", "-m", GEN_MODEL, "-p", prompt,
+        ["llama-cli", "-m", GEN_MODEL,
+         "-sys", "You are an expert farming advisor for Nigerian cassava farmers. Answer only from the facts given in the question.",
+         "-p", prompt,
          "-n", "600", "--no-warmup", "-st",
          "--temp", "0", "--seed", "42",
          "--no-display-prompt", "--no-show-timings", "--simple-io"],

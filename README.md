@@ -15,7 +15,9 @@ Health Consortium.
 
 ## How this system works
 
-The GGUF model on its own is Llama-3.2-1B-Instruct and has no cassava knowledge.
+The shipped GGUF is Llama-3.2-1B-Instruct with a condensed cassava knowledge digest
+embedded in its chat template, so it answers cassava questions even when loaded bare
+in LM Studio or Ollama with no system prompt supplied.
 What makes it an advisor is the retrieval layer around it:
 
 1. The farmer's question is expanded through a vocabulary map that translates
@@ -69,7 +71,7 @@ Two terminals are needed.
 
 ```bash
 # Terminal 1: the model server
-llama-server -m model/Llama-3.2-1B-Instruct-Q4_K_M.gguf --port 8080 -c 4096
+llama-server -m model/cassava-advisor-1B-Q4_K_M.gguf --port 8080 -c 4096
 
 # Terminal 2: the web app
 pip install fastapi uvicorn httpx

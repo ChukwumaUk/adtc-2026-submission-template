@@ -1,7 +1,10 @@
 {
   "team_id": "offline-cassava-advisor",
   "domain": "agriculture",
-  "language_scope": ["en", "ig"],
+  "language_scope": [
+    "en",
+    "ig"
+  ],
   "african_alpha_claim": true,
   "budget_laptop_claim": true,
   "submitter": {
@@ -12,26 +15,26 @@
   "cross_disciplinary_pairing": {
     "discipline": "agriculture",
     "load_bearing": true,
-    "description": "Offline RAG over vetted cassava agronomy records (FAO, IITA, and Nigerian extension material) to give smallholder farmers and extension workers grounded crop, pest, and disease advice with no internet."
+    "description": "Built by a software engineer working with three agricultural specialists whose input shaped the system directly. An agriculturist at the Ebonyi State agricultural ministry advised narrowing from agriculture broadly to a single crop, and described farmers in an international WhatsApp group repeatedly asking experts to identify crop pests and diseases. A production manager at a commercial cassava ethanol operation in Edo State identified weed management as their primary constraint and yield and starch content as their two measured goals, which is why variety selection and canopy-based weed suppression are first-class capabilities. A PhD agricultural researcher with IITA experience reviewed the system and submitted twenty written recommendations; his structured diagnostic output format was implemented, and his observation that most farmers he meets cannot read English defines the roadmap. The model pairs offline RAG over vetted agronomy records with this agronomic review."
   },
   "test_prompts": [
     {
       "prompt_id": "tp_001",
-      "prompt": "My cassava leaves are turning yellow and curling near the top of the plant. What could be causing this and what should I do?"
+      "prompt": "My cassava leaves have yellow and green mottled patches and the plants are stunted. What is wrong and what should I do?"
     },
     {
       "prompt_id": "tp_002",
-      "prompt": "I want to plant cassava at the start of the rainy season in southeastern Nigeria. How should I prepare the land and space the stem cuttings?"
+      "prompt": "Which improved cassava variety should I plant for the highest yield, and which has the most starch?"
     }
   ],
   "model": {
-    "name": "Llama-3.2-1B-Instruct-Q4_K_M",
+    "name": "cassava-advisor-1B-Q4_K_M",
     "runtime": "llama.cpp",
     "quantization": "GGUF Q4_K_M",
     "parameters_estimate": "1.1B",
     "packaging": "binary_bundle"
   },
   "_runtime": {
-    "model_path": "model/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+    "model_path": "model/cassava-advisor-1B-Q4_K_M.gguf"
   }
 }
