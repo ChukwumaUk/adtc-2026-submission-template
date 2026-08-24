@@ -139,3 +139,84 @@ python pipeline/build_store.py
 - NAERLS, Cassava Production, Processing and Utilization
 - Africa Soil Health Consortium, Cassava System Cropping Guide
 - FAO, Save and Grow: Cassava
+
+
+---
+
+## Running on Windows
+
+The quick start above uses bash and Homebrew, which assume macOS or Linux. On
+Windows, use the following instead.
+
+### 1. Get llama.cpp
+
+Download a prebuilt Windows release from
+https://github.com/ggerganov/llama.cpp/releases and take the
+`llama-*-bin-win-*.zip` that matches your CPU. Extract it and add that folder to
+your PATH so `llama-cli`, `llama-server` and `llama-embedding` are available from
+any terminal.
+
+### 2. Get the models
+
+`download_model.sh` is a bash script. In PowerShell, download the two files
+directly instead:
+
+    mkdir model -Force
+    Invoke-WebRequest -Uri "https://huggingface.co/ChukwumaUk/cassava-advisor-1B-Q4_K_M/resolve/main/cassava-advisor-1B-Q4_K_M.gguf" -OutFile "model\cassava-advisor-1B-Q4_K_M.gguf"
+    Invoke-WebRequest -Uri "https://huggingface.co/second-state/All-MiniLM-L6-v2-Embedding-GGUF/resolve/main/all-MiniLM-L6-v2-ggml-model-f16.gguf" -OutFile "model\all-MiniLM-L6-v2-ggml-model-f16.gguf"
+
+If you have Git Bash or WSL installed, `bash download_model.sh` works there as
+normal.
+
+### 3. Install the Python dependencies
+
+    pip install numpy rank_bm25
+
+### 4. Ask a question
+
+    python advise.py "My cassava leaves have yellow and green mottled patches and the plants are stunted. What is wrong and what should I do?"
+
+Note that Windows uses `python` where macOS and Linux use `python3`.
+
+### 5. Or use the web interface
+
+Two terminals are needed.
+
+    # Terminal 1: the model server
+    llama-server -m model\cassava-advisor-1B-Q4_K_M.gguf --port 8080 -c 4096
+
+    # Terminal 2: the web app
+    pip install fastapi uvicorn httpx
+    python -m uvicorn app:app --host 127.0.0.1 --port 8000
+
+Then open http://localhost:8000.
+
+---
+
+## Running the model on its own
+
+If you only want the model and not the retrieval pipeline, it works in any GGUF
+runtime on any platform. The cassava knowledge digest is embedded in the model's
+chat template, so it answers cassava questions correctly with no system prompt
+supplied.
+
+**LM Studio** (Windows, macOS, Linux). Search for
+`ChukwumaUk/cassava-advisor-1B-Q4_K_M`, or download the `.gguf` from Hugging Face
+and load it from your local models folder.
+
+**Ollama** (Windows, macOS, Linux). Create a file named `Modelfile` next to the
+downloaded weights containing a single line:
+
+    FROM ./cassava-advisor-1B-Q4_K_M.gguf
+
+Then build and run it:
+
+    ollama create cassava-advisor -f Modelfile
+    ollama run cassava-advisor "How do farmers manage cassava mosaic disease?"
+
+**llama.cpp directly:**
+
+    llama-cli -m cassava-advisor-1B-Q4_K_M.gguf -p "Which improved cassava variety gives the highest yield?"
+
+Answers from the model alone are less specific than the full retrieval pipeline,
+which grounds each answer in the source guides and shows which guide it came from.
