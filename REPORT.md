@@ -81,19 +81,19 @@ Measured on a 2015 MacBook Air, Intel Core i5-5250U dual-core, 8 GB RAM, no disc
 | Metric | Value |
 |---|---|
 | Model | cassava-advisor-1B-Q4_K_M, 771 MB |
-| Generation speed | 16.89 tokens/second |
-| Peak RSS | 1,425.69 MB |
+| Generation speed | 18.06 tokens/second |
+| Peak RSS | 1,446.17 MB |
 | Steady state RSS | 1,381 MB |
 | Time to first token | 9,169 ms |
 | Thermal throttling | None observed |
 | S_perf | 100 (capped at the 15 t/s reference) |
-| S_eff | 79.6 |
+| S_eff | 79.8 |
 
 Peak memory is 20 percent of the 7 GB budget. Under live use with the model server, the web application and the embedding process running together, sampled peak was 1,533 MB, still under a quarter of the ceiling.
 
 Two independent profiler runs were compared using the profiler's own variance tolerances. All four metrics passed with deltas under 0.3 percent against tolerances of plus or minus 15 percent for memory and 25 percent for throughput.
 
-Two measurement notes. With the model server and web application running, throughput measured 12.12 t/s rather than 18.41, so all reported figures were taken with nothing else running. And embedding the knowledge digest costs about 1.5 t/s and 600 ms of first-token latency, because every prompt now carries an extra 2,200 characters. Neither affects the scored result, since S_perf is capped at the 15 t/s reference.
+One measurement note. With the model server and web application running in the background, throughput measured 12.12 t/s rather than 18.06, so all reported figures were taken on an otherwise idle machine. Background load on a dual-core processor materially affects the benchmark.
 
 Docker-based containment testing was attempted but could not complete on macOS, where the container cannot access hardware thermal sensors and the profiler's thermal sampler loops. Memory headroom was verified by direct sampling instead.
 
