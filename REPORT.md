@@ -84,7 +84,7 @@ Measured on a 2015 MacBook Air, Intel Core i5-5250U dual-core, 8 GB RAM, no disc
 | Generation speed | 18.06 tokens/second |
 | Peak RSS | 1,446.17 MB |
 | Steady state RSS | 1,381 MB |
-| Time to first token | 9,169 ms |
+| Time to first token | 8,645 ms |
 | Thermal throttling | None observed |
 | S_perf | 100 (capped at the 15 t/s reference) |
 | S_eff | 79.8 |
