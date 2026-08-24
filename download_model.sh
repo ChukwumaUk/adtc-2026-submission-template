@@ -2,7 +2,7 @@
 # Download the model weights for the Offline Cassava Advisor.
 #
 # Two models are required:
-#   1. Llama-3.2-1B-Instruct-Q4_K_M.gguf  — the generator (declared in metadata.json)
+#   1. cassava-advisor-1B-Q4_K_M.gguf  — the generator (declared in metadata.json)
 #   2. all-MiniLM-L6-v2-ggml-model-f16.gguf — the embedder used for offline retrieval
 #
 # Rules:

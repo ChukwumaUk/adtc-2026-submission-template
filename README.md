@@ -59,7 +59,7 @@ Internet is needed for this step only. Everything after this runs offline.
 ### 2. Ask a question from the terminal
 
 ```bash
-python advise.py "My cassava leaves are turning yellow and curling near the top of the plant. What could be causing this and what should I do?"
+python advise.py "My cassava leaves have yellow and green mottled patches and the plants are stunted. What is wrong and what should I do?"
 ```
 
 This prints the retrieved sources with their relevance scores, then the grounded
