@@ -24,15 +24,21 @@ What makes it an advisor is the retrieval layer around it:
    everyday and Igbo farming terms into the technical language the guides use
    (for example "curling near the top" becomes "bunchy top, clumping, shoot tip").
 2. The expanded question is embedded offline using llama.cpp and matched against
-   677 passages from the source guides.
+   688 passages from the source guides.
 3. If nothing scores above the relevance threshold, the system declines to answer
    rather than guessing.
 4. The top passages are passed to the model, which answers using only those facts.
 5. Any chemical or treatment mentioned in the answer is flagged for the farmer to
    verify with an extension officer.
 
-The cross-disciplinary integration is this offline RAG pipeline over agricultural
-records. It is load-bearing: without it the model gives generic answers.
+The cross-disciplinary integration is agronomic rather than purely technical. Three
+agricultural specialists shaped this system directly: an agriculturist at the Ebonyi
+State agricultural ministry who advised narrowing to a single crop, a production
+manager at a commercial cassava ethanol operation in Edo State who identified weed
+management as their primary constraint and yield and starch content as their measured
+goals, and a PhD agricultural researcher with IITA experience who reviewed the system
+and submitted twenty written recommendations. Their input determined what the corpus
+covers, which capabilities were built, and what the roadmap prioritises.
 
 ---
 
@@ -105,7 +111,7 @@ The goat question is out of scope and is declined rather than answered.
 | `advise.py` | The advisor. Retrieval, grounding, safety checks, and the CLI. |
 | `app.py` | FastAPI server for the web interface. |
 | `symptom_map.py` | Farmer vocabulary to technical vocabulary bridge, English and Igbo. |
-| `vector_store.json` | 677 pre-computed passage embeddings. |
+| `vector_store.json` | 688 pre-computed passage embeddings. |
 | `corpus/` | Cleaned source text, so the vector store is reproducible. |
 | `pipeline/` | Scripts that built the corpus and the vector store. |
 | `static/` | Web interface. No external assets. |
